@@ -2,9 +2,9 @@ import AsyncStorage  from "@react-native-async-storage/async-storage";
 
 const KEY = 'userPrefs';
 
-export async function saveUserPrefs(name, color) {
+export async function saveUserPrefs(name) {
     try {
-        const payload = JSON.stringify({ name, color });
+        const payload = JSON.stringify({ name });
         await AsyncStorage.setItem(KEY, payload);
     } catch (e) {
         console.warn('Failed to save prefs', e);
