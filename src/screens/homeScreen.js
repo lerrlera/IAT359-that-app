@@ -1,65 +1,84 @@
 import { useState, useEffect } from "react";
 import { Button, View, Text, TextInput,TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { saveUserPrefs, loadUserPrefs, removeUserPrefs } from "../utils/storage";
+import { Colors } from "../utils/colors";
+import { FontAwesome } from '@expo/vector-icons';
+
 
 
 export default function HomeScreen({ navigation }) {
     const [name, setName] = useState("");
-    const [selectedColor, setSelectedColor] = useState("");
-    const colors = ["red","blue","orange","green"];
+    const [query, setQuery] = useState("");
+
 
     useEffect(() => {
         (async() => {
             const prefs = await loadUserPrefs();
             if (prefs?.name) setName(prefs.name);
-            if (prefs?.color) setSelectedColor(prefs.color);
         })()
     }, []);
 
     const handleSubmit = async() => {
-        if (name.trim() && selectedColor) {
-            await saveUserPrefs(name.trim(),selectedColor);
+        if (name.trim()) {
+            await saveUserPrefs(name.trim());
 
-            navigation.navigate("Welcome", { userName: name.trim(), backgroundColor: selectedColor});
+            navigation.navigate("Welcome", { userName: name.trim()});
         } else {
             Alert.alert("Missing info");
         }
     }
 
     return (
-        <View>
-            <Text>Enter your name</Text>
-            <TextInput placeholder="Name" placeholderTextColor="black" value={name} onChangeText={setName}></TextInput>
 
-            <View style={styles.colorRow}>
-                {colors.map((c)=>(
-                    <TouchableOpacity
-                    key={c}
-                    onPress={() => setSelectedColor(c)}
-                    style={[styles.colorSwatch, { backgroundColor: c, borderWidth: selectedColor === c ? 3 : 1 }]}
-/>
-                ))}
+        <View style={styles.container}>
+            <View style={styles.searchContainer}>
+            <FontAwesome name="search" size={18} color="#888" style={styles.icon} />
+            <TextInput style={styles.searchBar} placeholder="Search for location" placeholderTextColor={Colors.grey}value={query} onChangeText={setQuery}></TextInput>
+            <FontAwesome name="location-arrow" size={20} color="gray" style={styles.icon} />
+
             </View>
-            <Button title="Submit" onPress={handleSubmit}/>
+           
         </View>
+
+        
 
     )
 }
 
 const styles = StyleSheet.create(
     {
-        colorRow: {
-            flexDirection: "row",
-            gap: 12,
-            marginVertical: 10,
+        container: {
+            flex: 1,
+            padding: 20,
+            backgroundColor: Colors.background,
         },
-        colorSwatch: {
-            width: 40,
-            height: 40,
-            borderColor: "#111",
-            borderRadius: 8,
-        }
+        searchContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+            borderRadius: 100,
+            padding: 15,
+            backgroundColor: "white",
+            position: "relative",
+            // Shadow for iOS
+            shadowColor: '#696969ff',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
+            // Shadow for Android
+            elevation: 5,
+        },
+        searchBar: {
+            flex:1,
+
+        },
+        icon: {
+            marginRight: 8,
+            position: "fixed",
+            zIndex: 2,
+  },
+  
     }
+
 
 
 
