@@ -8,6 +8,8 @@ import logo from './assets/images/that-logo.png';
 
 import HomeScreen from "./src/screens/homeScreen";
 import WelcomeScreen from "./src/screens/welcomeScreen";
+import MapScreen from "./src/screens/mapScreen";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -29,7 +31,12 @@ export default function App() {
     return (
    
         <NavigationContainer>
-            <Stack.Navigator initialRouteName = "Home">
+            <Stack.Navigator initialRouteName = "Map">
+                <Stack.Screen
+                    name="Map"
+                    component={MapScreen}
+                    options = {{ title: "Map Screen" }}
+                />
                 <Stack.Screen
                     name="Home"
                     component={HomeScreen}
