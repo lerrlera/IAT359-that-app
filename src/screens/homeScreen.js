@@ -5,7 +5,6 @@ import { Colors } from "../utils/colors";
 import { FontAwesome } from '@expo/vector-icons';
 
 
-
 export default function HomeScreen({ navigation }) {
     const [name, setName] = useState("");
     const [query, setQuery] = useState("");
@@ -35,8 +34,8 @@ export default function HomeScreen({ navigation }) {
             <FontAwesome name="search" size={18} color="#888" style={styles.icon} />
             <TextInput style={styles.searchBar} placeholder="Search for location" placeholderTextColor={Colors.grey}value={query} onChangeText={setQuery}></TextInput>
             <FontAwesome name="location-arrow" size={20} color="gray" style={styles.icon} />
-
             </View>
+        
            
         </View>
 
@@ -75,7 +74,7 @@ const styles = StyleSheet.create(
             marginRight: 8,
             position: "fixed",
             zIndex: 2,
-  },
+        },
   
     }
 
