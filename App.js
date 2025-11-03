@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import logo from './assets/images/that-logo.png';
 
 import HomeScreen from "./src/screens/homeScreen";
-import WelcomeScreen from "./src/screens/welcomeScreen";
 import MapScreen from "./src/screens/mapScreen";
 
 
@@ -42,11 +41,7 @@ export default function App() {
                     component={HomeScreen}
                     options = {{ title: "Home Screen" }}
                 />
-                <Stack.Screen
-                    name="Welcome"
-                    component={WelcomeScreen}
-                    options = {{ title: "Weclome Screen" }}
-                />
+              
             </Stack.Navigator>
         </NavigationContainer>
     )

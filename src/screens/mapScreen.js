@@ -1,22 +1,32 @@
+// Map Screen page
+
+// imports
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
-import {Button, StyleSheet, Text, TextInput, View,} from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button, StyleSheet, Text, TextInput, View, Pressable } from "react-native";
 import Geocoder from "react-native-geocoding";
 import MapView, { PROVIDER_GOOGLE, PROVIDER_DEFAULT } from "react-native-maps";
 import { Platform } from "react-native";
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors } from "../utils/colors";
+import SearchBar from "../modules/SearchBar";
+import { useNavigation } from '@react-navigation/native';
 
 
-export default function App() {
+export default function MapScreen() {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [searchLocation, setSearchLocation] = useState(null);
+  // for colour switch on active search bar
   const [isFocused, setIsFocused] = useState(false);
 
-  // API key - I created the new one
+  const navigation = useNavigation();
+
+
+  // API key - I created a new one thorugh Google Cloud.
+  // It should work for you too! Let me know if it does not. Maybe you might need to create your own.
   Geocoder.init("AIzaSyCyVrYXWjAjwhTSKFKz3baEsNlSIS68xJM");
 
+  // Creates a reference to the MapView, allowing direct control (e.g., animate camera, move map).
   const mapRef = useRef(null);
   // perform search based on search term entered by the user
   const performSearch = async () => {
@@ -29,7 +39,7 @@ export default function App() {
         latitudeDelta: 0.1,
         longitudeDelta: 0.1,
       };
-
+      
       mapRef.current?.animateCamera(
         { center: searchedLocation, zoom: 15 },
         { duration: 2000 }
@@ -39,8 +49,8 @@ export default function App() {
     }
   };
 
-
   useEffect(() => {
+    
     // determining current location
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -63,6 +73,14 @@ export default function App() {
     })();
   }, []);
 
+  const goToCurrentLocation = () => {
+    if (!currentLocation) return;
+    const { latitude, longitude } = currentLocation.coords;
+    mapRef.current?.animateCamera(
+        { center: { latitude, longitude }, zoom: 15 },
+        { duration: 1000 }
+        );
+    };
 
   return (
     <View style={styles.container}>
@@ -71,7 +89,7 @@ export default function App() {
         ref={mapRef}
         initialRegion={{
           // rendering the map with an initial region
-            latitude: 49.2827,       // Vancouver city center
+            latitude: 49.2827,       // Vancouver city center - can be updated later
             longitude: -123.1207,
             latitudeDelta: 0.0922,  
             longitudeDelta: 0.0421,
@@ -79,27 +97,27 @@ export default function App() {
         showsMyLocationButton // show the current location button on map
         showsUserLocation // show current location on map
         // note: actual current location will only show on physical device (not on simulators)
-
         provider={Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
       />
-        <View style={[styles.searchContainer, 
-            {borderColor: isFocused ? Colors.peach : Colors.grey}]}>
-            <FontAwesome name="search" size={18} color="#888" style={styles.icon} />
-            <TextInput
-                style={styles.searchBar}
-                placeholder="Search for location"
-                placeholderTextColor={Colors.grey}
-                value={searchLocation}
-                onChangeText={setSearchLocation}
-                returnKeyType="search"
-                onSubmitEditing={performSearch}
-                onFocus={()=>setIsFocused(true)}
-                onBlur={()=>setIsFocused(false)}
-            />
-            {/* <FontAwesome name="location-arrow" size={20} color="gray" style={styles.icon} /> */}
-        </View>
+      
+    {/* Reusable search bar from modules */}
+      <SearchBar
+        value={searchLocation}
+        onChangeText={setSearchLocation}
+        onSubmit={performSearch}
+        isFocused={isFocused}
+        setIsFocused={setIsFocused}
+      />
+      <View style={styles.buttonContainer}>
+        <Pressable style={styles.roundButton} onPress={goToCurrentLocation}>
+            <FontAwesome5 name="location-arrow" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
+        </Pressable>
+         <Pressable style={styles.roundButton} onPress={()=>navigation.navigate("Home")}>
+            <FontAwesome5 name="list" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
+        </Pressable>
       </View>
-    // </SafeAreaView>
+
+      </View>
   );
 }
 
@@ -107,51 +125,34 @@ const styles = StyleSheet.create({
     container: {
         flex: 1, 
     },
-  title: {
-    marginTop: 10,
-    padding: 5,
-    fontWeight: "bold",
-    fontSize: 20,
-  },
-  map: {
-    flex: 1,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "black",
-    padding: 5,
-    borderRadius: 5,
-    margin: 10,
-  },
-  searchRow: {
-    flexDirection: "row",
-  },
-
-searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 100,
-    padding: 15,
-    margin: 10,
-    backgroundColor: "white",
-    position: "absolute",
-
-    // Shadow for iOS
-    shadowColor: '#171717ff',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    // Shadow for Android
-    elevation: 5,
-    zIndex: 10,
-
-},
-searchBar: {
-    flex:1,
-},
-icon: {
-    marginRight: 8,
-},
+    map: {
+        flex: 1,
+    },
+    icon: {
+        paddingLeft: 6,
+        paddingRight: 8,
+    },
+    buttonContainer: {
+        flexDirection: "column",
+        position: "absolute",
+        top: 500,
+        left: 314,
+    },
+    roundButton: {
+        borderRadius: 60,
+        backgroundColor: "white",
+        alignItems: "center",
+        justifyContent:"center",
+        width: 70,
+        height: 70,
+        marginBottom: 20,
+        // Shadow for iOS
+        shadowColor: '#171717ff',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.6,
+        shadowRadius: 20,
+        // Shadow for Android
+        elevation: 5,
+    },
+   
 });
