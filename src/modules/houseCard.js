@@ -1,25 +1,12 @@
 import { View, Text, Pressable, StyleSheet, Image, Button } from "react-native";
 import { Colors } from "../utils/colors";
-import { Button } from "react-native/types_generated/index";
-// just testing pushing capability 
 
 export default function HouseCard() {
 
   return (
     <Pressable style={styles.container}>
         <View>
-            <Image></Image>
-            <Text></Text>
-            <Text></Text>
-        </View>
-        <View>
-            <Text></Text>
-            <Text></Text>
-        </View>
-        <View>
-            <Button>
-
-            </Button>
+ 
     
         </View>
     </Pressable>
