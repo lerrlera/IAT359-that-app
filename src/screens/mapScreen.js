@@ -12,6 +12,7 @@ import { Colors } from "../utils/colors";
 import SearchBar from "../modules/SearchBar";
 import { useNavigation } from '@react-navigation/native';
 
+// is this working? 
 
 export default function MapScreen() {
   const [currentLocation, setCurrentLocation] = useState(null);
