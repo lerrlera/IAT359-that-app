@@ -108,16 +108,17 @@ export default function MapScreen() {
         isFocused={isFocused}
         setIsFocused={setIsFocused}
       />
-      <View style={styles.buttonContainer}>
-        <Pressable style={styles.roundButton} onPress={goToCurrentLocation}>
+      <View style={styles.overlay}>
+        <View style={styles.buttonContainer}>
+          <Pressable style={styles.roundButton} onPress={goToCurrentLocation}>
             <FontAwesome5 name="location-arrow" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
-        </Pressable>
-         <Pressable style={styles.roundButton} onPress={()=>navigation.navigate("Home")}>
+          </Pressable>
+          <Pressable style={styles.roundButton} onPress={()=>navigation.navigate("Home")}>
             <FontAwesome5 name="list" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
-        </Pressable>
+          </Pressable>
+        </View>
       </View>
-
-      </View>
+    </View>
   );
 }
 
@@ -134,9 +135,6 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: "column",
-        position: "absolute",
-        top: 500,
-        left: 314,
     },
     roundButton: {
         borderRadius: 60,
@@ -154,5 +152,10 @@ const styles = StyleSheet.create({
         // Shadow for Android
         elevation: 5,
     },
-   
+    overlay: {
+      ...StyleSheet.absoluteFillObject, 
+      justifyContent: "flex-end", 
+      alignItems: "flex-end",
+      padding: 20, 
+    }
 });
