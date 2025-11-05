@@ -1,5 +1,4 @@
 // Map Screen page
-
 // imports
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
@@ -12,15 +11,12 @@ import { Colors } from "../utils/colors";
 import SearchBar from "../modules/SearchBar";
 import { useNavigation } from '@react-navigation/native';
 
-
 export default function MapScreen() {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [searchLocation, setSearchLocation] = useState(null);
   // for colour switch on active search bar
   const [isFocused, setIsFocused] = useState(false);
-
   const navigation = useNavigation();
-
 
   // API key - I created a new one thorugh Google Cloud.
   // It should work for you too! Let me know if it does not. Maybe you might need to create your own.
@@ -94,9 +90,7 @@ export default function MapScreen() {
             latitudeDelta: 0.0922,  
             longitudeDelta: 0.0421,
         }}
-        showsMyLocationButton // show the current location button on map
         showsUserLocation // show current location on map
-        // note: actual current location will only show on physical device (not on simulators)
         provider={Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
       />
       
