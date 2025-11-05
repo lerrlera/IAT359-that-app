@@ -10,6 +10,8 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors } from "../utils/colors";
 import SearchBar from "../modules/SearchBar";
 import { useNavigation } from '@react-navigation/native';
+import { GOOGLE_MAPS_API_KEY } from '@env';
+
 
 export default function MapScreen() {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -18,9 +20,8 @@ export default function MapScreen() {
   const [isFocused, setIsFocused] = useState(false);
   const navigation = useNavigation();
 
-  // API key - I created a new one thorugh Google Cloud.
-  // It should work for you too! Let me know if it does not. Maybe you might need to create your own.
-  Geocoder.init("AIzaSyCyVrYXWjAjwhTSKFKz3baEsNlSIS68xJM");
+  // API key - I created a new one through Google Cloud. API key is stored in .env for privacy as .env is never committed
+  Geocoder.init(GOOGLE_MAPS_API_KEY);
 
   // Creates a reference to the MapView, allowing direct control (e.g., animate camera, move map).
   const mapRef = useRef(null);
@@ -46,7 +47,6 @@ export default function MapScreen() {
   };
 
   useEffect(() => {
-    
     // determining current location
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
