@@ -11,6 +11,9 @@ import { Colors } from "../utils/colors";
 import SearchBar from "../modules/SearchBar";
 import { useNavigation } from '@react-navigation/native';
 import { GOOGLE_MAPS_API_KEY } from '@env';
+import Header from "../modules/header";
+import { useFocusEffect } from '@react-navigation/native';
+import { loadMapPrefs } from "../utils/storage";
 
 
 export default function MapScreen() {
@@ -19,6 +22,10 @@ export default function MapScreen() {
   // for colour switch on active search bar
   const [isFocused, setIsFocused] = useState(false);
   const navigation = useNavigation();
+
+  // for async storage
+  const [mapPrefs, setMapPrefs] = useState(null);
+  const [currentRegion, setCurrentRegion] = useState(null);
 
   // API key - I created a new one through Google Cloud. API key is stored in .env for privacy as .env is never committed
   Geocoder.init(GOOGLE_MAPS_API_KEY);
@@ -45,6 +52,7 @@ export default function MapScreen() {
       console.warn(error);
     }
   };
+  
 
   useEffect(() => {
     // determining current location
@@ -80,6 +88,7 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
+      <Header title="Map"/>
         <MapView
         style={styles.map}
         ref={mapRef}
@@ -95,6 +104,8 @@ export default function MapScreen() {
       />
       
     {/* Reusable search bar from modules */}
+      <View style={styles.searchWrapper}>
+
       <SearchBar
         value={searchLocation}
         onChangeText={setSearchLocation}
@@ -102,6 +113,7 @@ export default function MapScreen() {
         isFocused={isFocused}
         setIsFocused={setIsFocused}
       />
+      </View>
       <View style={styles.overlay}>
         <View style={styles.buttonContainer}>
           <Pressable style={styles.roundButton} onPress={goToCurrentLocation}>
@@ -142,7 +154,7 @@ const styles = StyleSheet.create({
         shadowColor: '#171717ff',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.6,
-        shadowRadius: 20,
+        shadowRadius: 10,
         // Shadow for Android
         elevation: 5,
     },
@@ -151,5 +163,12 @@ const styles = StyleSheet.create({
       justifyContent: "flex-end", 
       alignItems: "flex-end",
       padding: 20, 
-    }
+    },
+    searchWrapper: {
+      position: "absolute",
+      top: 100, 
+      left: 0,
+      right: 0,
+      zIndex: 10, 
+    },
 });
