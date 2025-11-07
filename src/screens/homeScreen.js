@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }) {
                     <HouseCard></HouseCard>
                 </ScrollView>
                 <View style={styles.overlay}>
-                    <Pressable style={styles.roundButton} onPress={navigation.navigate("Map")}>
+                    <Pressable style={styles.roundButton} onPress={()=>navigation.navigate("Map")}>
                         <FontAwesome5 name="map" size={25}  solid={false} color="white" style={styles.icon}/>
                     </Pressable>
                 </View>
