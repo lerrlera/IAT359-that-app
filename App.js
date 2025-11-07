@@ -8,7 +8,7 @@ import logo from './assets/images/that-logo.png';
 
 import HomeScreen from "./src/screens/homeScreen";
 import MapScreen from "./src/screens/mapScreen";
-
+import SignInScreen from "./src/screens/signInScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,16 +30,21 @@ export default function App() {
     return (
    
         <NavigationContainer>
-            <Stack.Navigator initialRouteName = "Map">
+            <Stack.Navigator initialRouteName = "SignIn">
+                 <Stack.Screen
+                    name="SignIn"
+                    component={SignInScreen}
+                    options = {{ title: "Sign In Screen",headerShown: false }}
+                />
                 <Stack.Screen
                     name="Map"
                     component={MapScreen}
-                    options = {{ title: "Map Screen" }}
+                    options = {{ title: "Map Screen",headerShown: false }}
                 />
                 <Stack.Screen
                     name="Home"
                     component={HomeScreen}
-                    options = {{ title: "Home Screen" }}
+                    options = {{ title: "Home Screen", headerShown: false }}
                 />
               
             </Stack.Navigator>
