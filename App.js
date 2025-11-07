@@ -30,7 +30,7 @@ export default function App() {
     return (
    
         <NavigationContainer>
-            <Stack.Navigator initialRouteName = "SignIn">
+            <Stack.Navigator initialRouteName = "Map">
                  <Stack.Screen
                     name="SignIn"
                     component={SignInScreen}
