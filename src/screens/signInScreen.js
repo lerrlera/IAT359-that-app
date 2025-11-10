@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 23,
         fontWeight: "bold",
+        marginBottom: 12,
     },
     inputContainer: {
         alignItems: "center",
@@ -158,10 +159,10 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     signInButton: {
-        backgroundColor: "#111827",
+        backgroundColor: Colors.peach,
     },
     signUpButton: {
-        backgroundColor: "#2563eb",
+        backgroundColor: Colors.brown,
     },
     buttonText: {
         color: "white",
