@@ -2,10 +2,17 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+
+// AsyncStorage = library for React Native that provides a simple key-value storage solution. 
+// option to store data locally.
+// suitable for storing lightweight data like strings or JSON objects.
+// allows you to persist data in an async manner (it won't block the ui thread.)
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Contains the essential configuration keys (API key, Project ID, etc.) copied from the Firebase console
+// This is used to identify and connect to the project.
 const firebaseConfig = {
   apiKey: "AIzaSyD2z62FSYkVjcjgCg6pbpTcs_ZWSBOQlEk",
   authDomain: "thatapp-812c4.firebaseapp.com",
@@ -28,11 +35,16 @@ const firebaseConfig = {
 // };
 
 
-// Initialize Firebase
+// Initialize Firebase app instance using configuration object. 
 export const firebase_app = initializeApp(firebaseConfig);
+
+// initialize Firebase authentification service. 
+// it uses getReactNativePersistence(AsyncStorage) to ensure
+// user's sign-in state is saved & maintained across app sessions. 
 export const firebase_auth = initializeAuth(firebase_app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
+// initialize Firestore cloud db. 
 export const db = getFirestore(firebase_app);
 
 
