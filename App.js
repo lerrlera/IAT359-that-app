@@ -15,9 +15,12 @@ import { initHousesTable } from "./src/utils/db";
 const Stack = createNativeStackNavigator();
 const ProtectedStack = createNativeStackNavigator();
 
+// Defines a nested ProtectedStack navigator that contains screens Map and Home.
+// ProtectedStack navigator accessible only to signed-in users. 
 function ProtectedArea() {
     // put screens that require auth inside this stack
     return (
+        // hides header by default. 
         <ProtectedStack.Navigator screenOptions={{ headerShown: false }}>
             <ProtectedStack.Screen name="Map" component={MapScreen} />
             <ProtectedStack.Screen name="Home" component={HomeScreen} />
@@ -40,7 +43,11 @@ export default function App() {
     }, []);
 
 
+
+    // useEffect that runs async call initHousesTable()
+    // initHousesTable handles setting up the db & loading data from CSV. 
     useEffect(() => {
+        console.log("🔥 App mounted, calling initHousesTable...");
         const setup = async () => {
             await initHousesTable();
         };
@@ -48,6 +55,10 @@ export default function App() {
     }, []);
 
     // subscribe to firebase auth state, initialize DB & load CSV on first run
+    // useEffect(function_that_runs_the_effect, [dependencies]);
+    // this function's executed when [initializing] dependency changes. 
+    // onAuthStateChanged listens for login/logout event 
+    // when user logs in/out, it updates user (u)
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(firebase_auth, (u) => {
             setUser(u);

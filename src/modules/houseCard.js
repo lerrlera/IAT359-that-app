@@ -1,10 +1,12 @@
-import { View, Text, Pressable, StyleSheet, Image, Linking, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image, Linking, Alert } from "react-native"; // components in screen 
 import { Colors } from "../utils/colors";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Accordion from "./accordion";
 
 export default function HouseCard({ house }) {
-  const handleOpenWebsite = async () => {
+  const handleOpenWebsite = async () => { 
+    // async/await - used to handle operations that take some time to complete.
+    // asynchronous function that handles navigation to an external website. 
     if (!house.website) {
       Alert.alert("No website available");
       return;
@@ -12,10 +14,15 @@ export default function HouseCard({ house }) {
     const supported = await Linking.canOpenURL(house.website);
     if (supported) {
       await Linking.openURL(house.website);
+      // await: used to pause execution of async function until promise resolves/rejects. 
+      // await can only be used for async function. 
+      // promise = result returned inside the function. 
+      // Uses the Linking API to check if the device can open the website URL. 
     } else {
       Alert.alert(`Can't open URL: ${house.website}`);
     }
   };
+
 
   return (
     <Pressable style={styles.container}>
@@ -28,7 +35,10 @@ export default function HouseCard({ house }) {
         </View>
       </View>
 
+
       <View style={styles.availabilityContainer}>
+        {/* This uses a Ternary Operator to conditionally apply the greenDot or redDot style based on the house's availability status (case-insensitive check). */}
+        {/* condition ? trueResult : falseResult */}
         <View
           style={
             house.availability?.toLowerCase() === "available"
@@ -159,89 +169,3 @@ const styles = StyleSheet.create({
 });
 
 
-
-//   );
-// };
-// const styles = StyleSheet.create({
-//   container: {
-//     backgroundColor: "white",
-//     width: "90%",
-//     alignSelf:"center",
-//     borderRadius: 10,
-//     marginVertical: 5,
-//     padding: 20,       // optional padding inside card
-//     // Shadow
-//     shadowColor: '#6c6c6cff',
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.2,
-//     shadowRadius: 6,
-//     elevation: 5,
-//   },
-
-//   headerContainer: {
-//     flexDirection: "row",
-//     padding: 10,
-//     paddingTop:0,
-//   },
-//   image: {
-//     width: 47,
-//     height: 47,
-//   },
-//   title: {
-//     fontSize: 22,
-//     fontWeight: "bold",
-//     flexShrink: 1,
-//     marginLeft: 15,
-//   },
-//   availabilityContainer: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "flex-start",
-//     paddingLeft: 10,
-//     marginBottom: 10,
-//   },
-//   greenDot: {
-//     width: 12,
-//     height: 12,
-//     backgroundColor: Colors.green,
-//     borderRadius: 10,
-//     marginRight: 5,
-//   },
-//   availabilityText: {
-//     fontSize: 15,
-//     color: Colors.green,
-//   },
-//   boxContainer: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "#FCF2ED",
-//     padding: 14,
-//     borderRadius: 5,
-//     marginBottom: 7,
-//   },
-//   timeText: {
-//     fontSize: 13,
-//     fontWeight: "500"
-//   },
-//   icon: { paddingRight: 8 },
-//   link: {
-//     color: Colors.peach,
-//     textDecorationLine: "underline",
-//     marginBottom: 5,
-//   },
-//   buttonContainer: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     marginTop: 7,
-//   },
-//   button: {
-//     padding: 15,
-//     width: "31%",
-//     backgroundColor: Colors.brown,
-//     borderRadius: 8,
-//     alignItems: "center",
-//   },
-//   buttonText: {
-//     color: "white",
-//   },
-// });
