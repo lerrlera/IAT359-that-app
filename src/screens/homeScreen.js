@@ -21,15 +21,20 @@ import HouseCard from "../modules/houseCard";
 import Header from "../modules/header";
 import { fetchHouses } from "../utils/db";
 
+// navigation prop = provides methods & properties for navigating between screens
+// and controlling the navigation state. 
+// navigation prop's passed down to every screen component in the stack navigator.
 export default function HomeScreen({ navigation }) {
 
     const [houses, setHouses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
+    // calls the Firebase signOut method to terminate user session. 
     const handleSignOut = async () => {
         try {
             await signOut(firebase_auth);
+            // uses navigation.replace
             // go back to SignInScreen after signing out
             navigation.replace("SignIn");
         } catch (e) {
@@ -38,13 +43,20 @@ export default function HomeScreen({ navigation }) {
     };
 
 
+    // defines an async function for fetching house data - could take some time. 
     const loadHouses = async () => {
         try {
+            // await keyword - used to pause the execution of async function 
+            // until the promise resolves. Promise = result returned inside the function. 
+            // await keyword ensures that data's fully fetched before proceeding. 
             const rows = await fetchHouses();
+            console.log("📌 fetchHouses returned:", rows.length);
             setHouses(rows);
         } catch (e) {
             console.warn("Error fetching houses:", e);
         } finally {
+            // ensures that loading & refreshing states are reset to false
+            // this runs regardless of whether the data fetch's successful or not. 
             setLoading(false);
             setRefreshing(false);
         }
@@ -53,9 +65,16 @@ export default function HomeScreen({ navigation }) {
 
     const user = firebase_auth.currentUser;
 
+    // useEffect() = code to create schema. 
+    // useEffect() hook used to handle 'side effects' in React component
+    // side effects include things like data fetching from external APIs, connecting to servers, setting timers...
+    // also setting up a database table. 
+    // useEffect() hook runs once when the component mounts to initiate data loading process. 
     useEffect(() => {
         loadHouses();
     }, []);
+    // first argument = function that runs the effect
+    // 2nd argument: array of dependencies (optional). This controls when the useEffect runs
 
     if (loading) {
         return (
@@ -97,6 +116,8 @@ export default function HomeScreen({ navigation }) {
 
 
             </ScrollView>
+
+            {/* navigate method navigation.navigate used to switch to a new screen */}
             <View style={styles.overlay}>
                 <Pressable style={styles.roundButton} onPress={() => navigation.navigate("Map")}>
                     <FontAwesome5 name="map" size={25} solid={false} color="white" style={styles.icon} />
