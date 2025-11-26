@@ -64,26 +64,6 @@ export default function App() {
         );
     }
 
-
-    //   // show splash first
-    //   if (splashLoading) {
-    //     return (
-    //       <View style={styles.splashTest}>
-    //         <Image source={require("./assets/images/that-logo.png")} style={styles.logo} />
-    //       </View>
-    //     );
-    //   }
-
-    //   // show spinner while auth state is initializing
-    //   if (initializing) {
-    //     return (
-    //       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    //         <ActivityIndicator size="large" />
-    //       </View>
-    //     );
-    //   }
-
-    // main navigator: show protected area if signed in, otherwise sign-in screen
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
