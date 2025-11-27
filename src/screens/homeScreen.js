@@ -18,7 +18,6 @@ import { Colors } from "../utils/colors";
 import { FontAwesome5 } from '@expo/vector-icons';
 
 import HouseCard from "../modules/houseCard";
-import Header from "../modules/header";
 import { fetchHouses } from "../utils/db";
 
 // navigation prop = provides methods & properties for navigating between screens
@@ -41,7 +40,6 @@ export default function HomeScreen({ navigation }) {
             Alert.alert("Sign out failed", e.message);
         }
     };
-
 
     // defines an async function for fetching house data - could take some time. 
     const loadHouses = async () => {
@@ -88,7 +86,6 @@ export default function HomeScreen({ navigation }) {
 
     return (
         <View style={styles.mainContainer}>
-            <Header title="Transition House List" />
 
             <View style={styles.greetingContainer}>
                 <Text style={styles.header}>Hello!</Text>
@@ -117,18 +114,15 @@ export default function HomeScreen({ navigation }) {
 
             </ScrollView>
 
-            {/* navigate method navigation.navigate used to switch to a new screen */}
-            <View style={styles.overlay}>
+            {/* <View style={styles.overlay}>
                 <Pressable style={styles.roundButton} onPress={() => navigation.navigate("Map")}>
                     <FontAwesome5 name="map" size={25} solid={false} color="white" style={styles.icon} />
                 </Pressable>
-            </View>
+            </View> */}
 
         </View>
 
     );
-
-
 }
 
 const styles = StyleSheet.create({
@@ -136,9 +130,9 @@ const styles = StyleSheet.create({
     greetingContainer: {
         flexDirection: 'column',
         margin: 10,
+        marginTop: 70,
         justifyContent: "center",
         alignItems: "center",
-
     },
 
     header: {
@@ -182,7 +176,6 @@ const styles = StyleSheet.create({
     },
     cardContainer: {
         width: "100%",
-        overflow: "visible",
     },
     roundButton: {
         borderRadius: 60,
