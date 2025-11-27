@@ -2,19 +2,18 @@
 // imports
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View, Pressable } from "react-native";
+import { StyleSheet, Text, TextInput, View, Pressable,Image } from "react-native";
 import Geocoder from "react-native-geocoding";
 import MapView, { PROVIDER_GOOGLE, PROVIDER_DEFAULT } from "react-native-maps";
+import { Marker, Circle } from "react-native-maps";
 import { Platform } from "react-native";
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors } from "../utils/colors";
 import SearchBar from "../modules/SearchBar";
 import { useNavigation } from '@react-navigation/native';
 import { GOOGLE_MAPS_API_KEY } from '@env';
-import Header from "../modules/header";
-import { useFocusEffect } from '@react-navigation/native';
-import { loadMapPrefs } from "../utils/storage";
-
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../utils/firebase.config";
 
 export default function MapScreen() {
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -23,9 +22,13 @@ export default function MapScreen() {
   const [isFocused, setIsFocused] = useState(false);
   const navigation = useNavigation();
 
-  // for async storage
-  const [mapPrefs, setMapPrefs] = useState(null);
-  const [currentRegion, setCurrentRegion] = useState(null);
+  // for fetching house data on the map as markers
+  const [houses, setHouses] = useState([]);
+  const [loadingHouses, setLoadingHouses] = useState(true);
+
+  const [selectedHouse, setSelectedHouse] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+
 
   // API key - I created a new one through Google Cloud. API key is stored in .env for privacy as .env is never committed
   Geocoder.init(GOOGLE_MAPS_API_KEY);
@@ -43,7 +46,6 @@ export default function MapScreen() {
         latitudeDelta: 0.1,
         longitudeDelta: 0.1,
       };
-      
       mapRef.current?.animateCamera(
         { center: searchedLocation, zoom: 15 },
         { duration: 2000 }
@@ -53,6 +55,25 @@ export default function MapScreen() {
     }
   };
   
+  useEffect(() => {
+  async function loadHouses() {
+    try {
+      const colRef = collection(db, "transition_houses");
+      const snap = await getDocs(colRef);
+      const list = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setHouses(list);
+      console.log("Houses loaded from Firestore:", list);
+    } catch (err) {
+      console.log("Error loading houses:", err);
+    } finally {
+      setLoadingHouses(false);
+    }
+  }
+  loadHouses();
+  }, []);
 
   useEffect(() => {
     // determining current location
@@ -77,6 +98,11 @@ export default function MapScreen() {
     })();
   }, []);
 
+  useEffect(() => {
+  console.log("MOUNT: MapScreen");
+  return () => console.log("UNMOUNT: MapScreen");
+  }, []);
+
   const goToCurrentLocation = () => {
     if (!currentLocation) return;
     const { latitude, longitude } = currentLocation.coords;
@@ -88,42 +114,98 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Map"/>
-        <MapView
+         <MapView
         style={styles.map}
         ref={mapRef}
         initialRegion={{
-          // rendering the map with an initial region
-            latitude: 49.2827,       // Vancouver city center - can be updated later
-            longitude: -123.1207,
-            latitudeDelta: 0.0922,  
-            longitudeDelta: 0.0421,
+          latitude: 49.2827,
+          longitude: -123.1207,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
         }}
-        showsUserLocation // show current location on map
+        showsUserLocation
         provider={Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-      />
-      
-    {/* Reusable search bar from modules */}
-      <View style={styles.searchWrapper}>
+      >
+        {!loadingHouses && houses.length > 0 && houses.map(h => {
+        // safety check - skip items without coordinates
+          if (!h.approxLat || !h.approxLng) return null;
+          return (
+            <View key={h.id}>
+                <Marker
+                  coordinate={{
+                  latitude: Number(h.approxLat),
+                  longitude: Number(h.approxLng),
+                  }}
+                  onPress={() => {
+                    setSelectedHouse(h);
+                    setShowPopup(true);
+                  }}
+                  //title={h.program}          // popup title
+                  //description={h.city}       // popup subtitle
+                >
+                  <Image source={
+                    h.availability === "Available"
+                    ? require("../../assets/images/available-marker.png")
+                    : require("../../assets/images/unavailable-marker.png")}
+                      style={{ width: 45, height: 45 }}
+                      resizeMode="contain"
+                  />
+                </Marker>
+                <Circle center={{
+                  latitude: Number(h.approxLat),
+                  longitude: Number(h.approxLng),
+                  }}
+                  radius={h.radius || 1500}
+                  strokeColor={
+                  h.availability === "Available"
+                  ? "rgba(0,200,0,0.8)"    // green outline
+                  : "rgba(255,0,0,0.8)"    // red outline
+                  }
+                  fillColor={
+                    h.availability === "Available"
+                    ? "rgba(0,200,0,0.2)"    // green transparent
+                    : "rgba(255,0,0,0.2)"    // red transparent
+                  }
+                />
+              </View>
+              );
+            })
+          }
+        </MapView>
+        {showPopup && selectedHouse && (
+          <View style={styles.popupContainer}>
+            <Text style={styles.popupTitle}>{selectedHouse.program}</Text>
+            <Text style={styles.popupCity}>{selectedHouse.city}</Text>
+            <Text style={styles.popupStatus}>
+            {selectedHouse.availability === "Available" ? "Available" : "Unavailable"}
+            </Text>
+            <Pressable onPress={() => setShowPopup(false)} style={styles.popupClose}>
+              <Text style={{ color: "white" }}>Close</Text>
+            </Pressable>
+          </View>
+        )}
 
-      <SearchBar
-        value={searchLocation}
-        onChangeText={setSearchLocation}
-        onSubmit={performSearch}
-        isFocused={isFocused}
-        setIsFocused={setIsFocused}
-      />
-      </View>
-      <View style={styles.overlay}>
-        <View style={styles.buttonContainer}>
-          <Pressable style={styles.roundButton} onPress={goToCurrentLocation}>
-            <FontAwesome5 name="location-arrow" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
-          </Pressable>
-          <Pressable style={styles.roundButton} onPress={()=>navigation.navigate("Home")}>
-            <FontAwesome5 name="list" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
-          </Pressable>
+        {/* Reusable search bar from modules */}
+        <View style={styles.searchWrapper}>
+          <SearchBar
+            value={searchLocation}
+            onChangeText={setSearchLocation}
+            onSubmit={performSearch}
+            isFocused={isFocused}
+            setIsFocused={setIsFocused}
+          />
         </View>
-      </View>
+        <View style={styles.overlay}>
+          <View style={styles.buttonContainer}>
+            <Pressable style={styles.roundButton} onPress={goToCurrentLocation}>
+              <FontAwesome5 name="location-arrow" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
+            </Pressable>
+    
+              {/* <Pressable style={styles.roundButton} onPress={()=>navigation.navigate("Home")}>
+                <FontAwesome5 name="list" size={25}  solid={false} color={Colors.peach} style={styles.icon}/>
+              </Pressable> */}
+          </View>
+        </View>
     </View>
   );
 }
@@ -166,9 +248,43 @@ const styles = StyleSheet.create({
     },
     searchWrapper: {
       position: "absolute",
-      top: 100, 
+      top: 50, 
       left: 0,
       right: 0,
       zIndex: 10, 
+    },
+    popupContainer: {
+      position: "absolute",
+      top: 13,
+      left: 20,
+      right: 20,
+      backgroundColor: "white",
+      padding: 20,
+      borderRadius: 12,
+      shadowColor: "#000",
+      shadowOpacity: 0.2,
+      shadowOffset: { width: 0, height: 3 },
+      shadowRadius: 8,
+      elevation: 5,
+    },
+    popupTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+    },
+    popupCity: {
+      fontSize: 14,
+      color: "#666",
+      marginTop: 4,
+    },
+    popupStatus: {
+      marginTop: 6,
+      fontWeight: "600",
+    },
+    popupClose: {
+      marginTop: 10,
+      backgroundColor: Colors.peach,
+      padding: 10,
+      borderRadius: 6,
+      alignItems: "center"
     },
 });

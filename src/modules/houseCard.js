@@ -1,12 +1,21 @@
-import { View, Text, Pressable, StyleSheet, Image, Linking, Alert } from "react-native"; // components in screen 
+import { 
+  View, 
+  Text, 
+  Pressable, 
+  StyleSheet, 
+  Image, 
+  Linking, 
+  Alert 
+} from "react-native";
+
 import { Colors } from "../utils/colors";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Accordion from "./accordion";
 
 export default function HouseCard({ house }) {
+
+  // 1️⃣ Open website
   const handleOpenWebsite = async () => { 
-    // async/await - used to handle operations that take some time to complete.
-    // asynchronous function that handles navigation to an external website. 
     if (!house.website) {
       Alert.alert("No website available");
       return;
@@ -14,60 +23,94 @@ export default function HouseCard({ house }) {
     const supported = await Linking.canOpenURL(house.website);
     if (supported) {
       await Linking.openURL(house.website);
-      // await: used to pause execution of async function until promise resolves/rejects. 
-      // await can only be used for async function. 
-      // promise = result returned inside the function. 
-      // Uses the Linking API to check if the device can open the website URL. 
     } else {
       Alert.alert(`Can't open URL: ${house.website}`);
     }
   };
 
+  // 2️⃣ Call
+  const handleCall = () => {
+    const number = house.phone || house.toll_free_phone;
+    if (!number) {
+      Alert.alert("No phone number available");
+      return;
+    }
+    Linking.openURL(`tel:${number}`);
+  };
+
+  // 3️⃣ Directions
+  const handleDirections = () => {
+    if (!house.approxLat || !house.approxLng) {
+      Alert.alert("Location unavailable");
+      return;
+    }
+
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${house.approxLat},${house.approxLng}`;
+    Linking.openURL(url);
+  };
 
   return (
-    <Pressable style={styles.container}>
+    <View style={styles.container}>
+
+      {/* Header */}
       <View style={styles.headerContainer}>
-        <Image source={require("../../assets/images/house.png")} style={styles.image} />
+        <Image 
+          source={require("../../assets/images/house.png")} 
+          style={styles.image} 
+        />
         <View style={styles.subheaderContainer}>
           <Text style={styles.title}>{house.program}</Text>
           <Text style={styles.subheaderText}>{house.organization}</Text>
-
         </View>
       </View>
 
+      {/* Availability + Last Updated Row */}
+      <View style={styles.statusRow}>
+        
+        {/* Availability */}
+        <View style={styles.availabilityContainer}>
+          <View
+            style={
+              house.availability?.toLowerCase() === "available"
+                ? styles.greenDot
+                : styles.redDot
+            }
+          />
+          <Text
+            style={[
+              styles.availabilityText,
+              {
+                color:
+                  house.availability?.toLowerCase() === "available"
+                    ? Colors.green
+                    : Colors.red,
+              },
+            ]}
+          >
+            {house.availability || "Unknown"}
+          </Text>
+        </View>
 
-      <View style={styles.availabilityContainer}>
-        {/* This uses a Ternary Operator to conditionally apply the greenDot or redDot style based on the house's availability status (case-insensitive check). */}
-        {/* condition ? trueResult : falseResult */}
-        <View
-          style={
-            house.availability?.toLowerCase() === "available"
-              ? styles.greenDot
-              : styles.redDot
-          }
-        />
-        <Text
-          style={[
-            styles.availabilityText,
-            {
-              color:
-                house.availability?.toLowerCase() === "available"
-                  ? Colors.green
-                  : Colors.red,
-            },
-          ]}
-        >
-          {house.availability || "Availability unknown"}
+        {/* Updated text */}
+        <Text style={styles.updatedText}>
+          {house.last_updated ? `Updated: ${house.last_updated}` : "Updated: Unknown"}
         </Text>
+
       </View>
 
+      {/* City */}
       <View style={styles.locationContainer}>
         <View style={styles.boxContainer}>
-          <FontAwesome5 name="map-marker-alt" size={18} color={Colors.peach} style={styles.icon} />
+          <FontAwesome5 
+            name="map-marker-alt" 
+            size={18} 
+            color={Colors.peach} 
+            style={styles.icon} 
+          />
           <Text style={styles.bodyText}>{house.city}</Text>
         </View>
       </View>
-
+      {/* Accordion */}
       <Accordion title="More info">
         {house.phone ? <Text>📞 {house.phone}</Text> : null}
         {house.toll_free_phone ? <Text>📞 {house.toll_free_phone}</Text> : null}
@@ -79,77 +122,116 @@ export default function HouseCard({ house }) {
           </Text>
         ) : null}
       </Accordion>
-    </Pressable>
+
+
+      {/* Call + Directions Buttons */}
+      <View style={styles.actionsRow}>
+        <Pressable style={styles.actionButton} onPress={handleCall}>
+          <FontAwesome5 name="phone" size={16} color="white" />
+          <Text style={styles.actionText}>Call</Text>
+        </Pressable>
+
+        <Pressable style={styles.actionButton} onPress={handleDirections}>
+          <FontAwesome5 name="directions" size={16} color="white" />
+          <Text style={styles.actionText}>Directions</Text>
+        </Pressable>
+      </View>
+
+
+
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "white",
-    width: "90%",
+    width: "95%",
     alignSelf: "center",
     borderRadius: 10,
-    marginVertical: 5,
-    padding: 20,
+    marginVertical: 8,
+    padding: 15,
     shadowColor: "#6c6c6cff",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 5,
   },
+
   headerContainer: {
     flexDirection: "row",
     padding: 10,
-    paddingTop: 0,
+    paddingTop: 6,
   },
+
   subheaderContainer: {
     flexDirection: "column",
     flex: 1,
     marginLeft: 15,
   },
+
   image: {
     width: 47,
-    height: 47
+    height: 47,
   },
+
   title: {
     fontSize: 20,
     fontWeight: "800",
     flexShrink: 1,
-    flexWrap: "wrap",
   },
+
   subheaderText: {
     fontSize: 15,
     fontWeight: "600",
     flexShrink: 1,
-    flexWrap: "wrap",
   },
-  bodyText: {
-    fontSize: 15,
+
+  /* ROW: Availability + Updated */
+  statusRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    marginVertical: 10,
   },
+
+  /* Availability section */
   availabilityContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
-    paddingLeft: 10,
   },
+
   greenDot: {
     width: 12,
     height: 12,
     backgroundColor: Colors.green,
     borderRadius: 10,
-    marginRight: 5
+    marginRight: 6,
   },
+
   redDot: {
     width: 12,
     height: 12,
     backgroundColor: Colors.red,
     borderRadius: 10,
-    marginRight: 5
+    marginRight: 6,
   },
+
   availabilityText: {
     fontSize: 15,
-    color: Colors.green
   },
+
+  /* Updated text */
+  updatedText: {
+    fontSize: 13,
+    color: "#6d6d6d",
+  },
+
+  bodyText: {
+    fontSize: 15,
+  },
+
   boxContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -158,14 +240,43 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 7,
   },
+
   icon: {
-    paddingRight: 8
+    paddingRight: 8,
   },
+
+  /* Buttons */
+  actionsRow: {
+    flexDirection: "row",
+    marginTop: 6,
+    width: "100%",
+    marginBottom: 5,
+  },
+
+  actionButton: {
+    flex: 1,
+    flexDirection: "row",
+    backgroundColor: Colors.peach,
+    padding: 16,
+    marginHorizontal: 5,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  actionText: {
+    color: "white",
+    fontWeight: "600",
+    marginLeft: 6,
+    fontSize: 14,
+  },
+
   link: {
     color: Colors.peach,
     textDecorationLine: "underline",
-    marginTop: 5
+    marginTop: 5,
   },
 });
+
 
 
