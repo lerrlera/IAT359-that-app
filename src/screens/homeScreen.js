@@ -1,203 +1,182 @@
 import { useState, useEffect } from "react";
-import { firebase_auth } from "../utils/firebase.config";
-import { signOut } from "firebase/auth";
+import * as Location from "expo-location";
 import {
-    Button,
-    View,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    Alert,
-    Pressable,
-    ActivityIndicator,
-    RefreshControl
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+  Pressable,
 } from "react-native";
-import { Colors } from "../utils/colors";
-import { FontAwesome5 } from '@expo/vector-icons';
 
+import { Colors } from "../utils/colors";
 import HouseCard from "../modules/houseCard";
 import { fetchHouses } from "../utils/db";
 
-// navigation prop = provides methods & properties for navigating between screens
-// and controlling the navigation state. 
-// navigation prop's passed down to every screen component in the stack navigator.
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen() {
+  const [houses, setHouses] = useState([]);
+  const [filtered, setFiltered] = useState([]);
 
-    const [houses, setHouses] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-    // calls the Firebase signOut method to terminate user session. 
-    const handleSignOut = async () => {
-        try {
-            await signOut(firebase_auth);
-            // uses navigation.replace
-            // go back to SignInScreen after signing out
-            navigation.replace("SignIn");
-        } catch (e) {
-            Alert.alert("Sign out failed", e.message);
-        }
-    };
+  // Only one filter
+  const [sortNearest, setSortNearest] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
 
-    // defines an async function for fetching house data - could take some time. 
-    const loadHouses = async () => {
-        try {
-            // await keyword - used to pause the execution of async function 
-            // until the promise resolves. Promise = result returned inside the function. 
-            // await keyword ensures that data's fully fetched before proceeding. 
-            const rows = await fetchHouses();
-            console.log("📌 fetchHouses returned:", rows.length);
-            setHouses(rows);
-        } catch (e) {
-            console.warn("Error fetching houses:", e);
-        } finally {
-            // ensures that loading & refreshing states are reset to false
-            // this runs regardless of whether the data fetch's successful or not. 
-            setLoading(false);
-            setRefreshing(false);
-        }
+  // Load houses
+  const loadHouses = async () => {
+    try {
+      const rows = await fetchHouses();
+      setHouses(rows);
+      setFiltered(rows);
+    } catch (e) {
+      console.warn("Error fetching houses:", e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-    };
+  // Get user location
+  const getUserLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") return;
+    const loc = await Location.getCurrentPositionAsync({});
+    setUserLocation(loc.coords);
+  };
 
-    const user = firebase_auth.currentUser;
+  useEffect(() => {
+    loadHouses();
+    getUserLocation();
+  }, []);
 
-    // useEffect() = code to create schema. 
-    // useEffect() hook used to handle 'side effects' in React component
-    // side effects include things like data fetching from external APIs, connecting to servers, setting timers...
-    // also setting up a database table. 
-    // useEffect() hook runs once when the component mounts to initiate data loading process. 
-    useEffect(() => {
-        loadHouses();
-    }, []);
-    // first argument = function that runs the effect
-    // 2nd argument: array of dependencies (optional). This controls when the useEffect runs
+  // SORT NEAREST LOGIC
+  useEffect(() => {
+    let data = [...houses];
 
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors.peach} />
-            </View>
-
+    if (sortNearest && userLocation) {
+      data.sort((a, b) => {
+        const distA = Math.hypot(
+          userLocation.latitude - Number(a.approxLat),
+          userLocation.longitude - Number(a.approxLng)
         );
-
+        const distB = Math.hypot(
+          userLocation.latitude - Number(b.approxLat),
+          userLocation.longitude - Number(b.approxLng)
+        );
+        return distA - distB;
+      });
     }
 
+    setFiltered(data);
+  }, [sortNearest, houses, userLocation]);
+
+  if (loading) {
     return (
-        <View style={styles.mainContainer}>
-
-            <View style={styles.greetingContainer}>
-                <Text style={styles.header}>Hello!</Text>
-                {user && <Text style={styles.subheader}>Your email: {user.email}</Text>}
-
-                <TouchableOpacity onPress={handleSignOut} style={styles.button}>
-                    <Text style={styles.buttonText}>Sign Out</Text>
-                </TouchableOpacity>
-            </View>
-
-
-            <ScrollView style={styles.cardContainer}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={loadHouses} />
-
-                }
-            >
-                {houses.map((h) => (
-                    <HouseCard key={h.id}
-                        house={h} />
-
-                ))}
-
-
-            </ScrollView>
-
-            {/* <View style={styles.overlay}>
-                <Pressable style={styles.roundButton} onPress={() => navigation.navigate("Map")}>
-                    <FontAwesome5 name="map" size={25} solid={false} color="white" style={styles.icon} />
-                </Pressable>
-            </View> */}
-
-        </View>
-
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.peach} />
+      </View>
     );
+  }
+
+  return (
+    <ScrollView
+      style={styles.mainContainer}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={loadHouses} />
+      }
+    >
+      {/* HEADER */}
+      <View style={styles.greetingContainer}>
+        <Text style={styles.header}>List of Transition Houses</Text>
+        <Text style={styles.subheader}>
+          Browse available transition houses in your area
+        </Text>
+      </View>
+
+      {/* NEAREST FILTER */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filtersRow}
+      >
+        <Pressable
+          onPress={() => setSortNearest(!sortNearest)}
+          style={[styles.filterPill, sortNearest && styles.filterActive]}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              sortNearest && { color: "white" }, // ACTIVE TEXT WHITE
+            ]}
+          >
+            Nearest
+          </Text>
+        </Pressable>
+      </ScrollView>
+
+      {/* LIST OF HOUSES */}
+      <View style={{ paddingBottom: 40 }}>
+        {filtered.map((h) => (
+          <HouseCard key={h.id} house={h} />
+        ))}
+      </View>
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
+  greetingContainer: {
+    marginTop: 75,
+    padding: 20,
+    paddingBottom: 10,
+    alignItems: "flex-start",
+  },
 
-    greetingContainer: {
-        flexDirection: 'column',
-        margin: 10,
-        marginTop: 70,
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  header: {
+    fontSize: 18,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
 
-    header: {
-        fontSize: 20,
-        fontWeight: "600",
-        flexShrink: 1,
-        flexWrap: "wrap",
-    },
+  subheader: {
+    fontSize: 15,
+    color: "#8d8d8dff",
+  },
 
-    subheader: {
-        fontSize: 15,
-        fontWeight: "500",
-        flexShrink: 1,
-        flexWrap: "wrap",
-    },
+  filtersRow: {
+    paddingHorizontal: 15,
+    marginBottom: 10,
+  },
 
-    buttonText: {
-        color: 'white',
-        fontSize: 15,
-        fontWeight: 'bold',
-    },
+  filterPill: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: "#f2f2f2",
+    marginRight: 10,
+  },
 
-    button: {
-        marginTop: 8,
-        padding: 12,
-        width: "100%",
-        backgroundColor: Colors.peach,
-        borderRadius: 8,
-        alignItems: "center",
-    },
+  filterActive: {
+    backgroundColor: Colors.peach,
+  },
 
-    loadingContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center"
-    },
+  filterText: {
+    fontSize: 13,
+    color: "#333",
+    fontWeight: "500",
+  },
 
-    mainContainer: {
-        flex: 1,
-        backgroundColor: Colors.background,
-    },
-    cardContainer: {
-        width: "100%",
-    },
-    roundButton: {
-        borderRadius: 60,
-        backgroundColor: Colors.peach,
-        alignItems: "center",
-        justifyContent: "center",
-        width: 70,
-        height: 70,
-        marginBottom: 20,
-        zIndex: 999,
-        // Shadow for iOS
-        shadowColor: '#686868ff',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.6,
-        shadowRadius: 20,
-        // Shadow for Android
-        elevation: 5,
-    },
-    overlay: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: "flex-end",
-        alignItems: "flex-end",
-        padding: 20,
-    }
-})
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+});

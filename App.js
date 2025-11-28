@@ -7,6 +7,9 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import SignInScreen from "./src/screens/signInScreen";
 import HomeScreen from "./src/screens/homeScreen";
 import MapScreen from "./src/screens/mapScreen";
+import AvailabilityScreen from "./src/screens/availabilityScreen";
+import AccountScreen from "./src/screens/accountScreen";
+
 import { Colors } from "./src/utils/colors";
 import { onAuthStateChanged } from "firebase/auth";
 import { firebase_auth } from "./src/utils/firebase.config";
@@ -23,15 +26,15 @@ function ProtectedArea() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: Colors.peach,
-        tabBarInactiveTintColor: "#999",
+        tabBarInactiveTintColor: "#a29b9aff",
         tabBarStyle: {
-          backgroundColor: "#FFF0E9",   // peachy background
-          height: 70,
+          backgroundColor: "#fbebe4ff",
+          height: 80,
           paddingBottom: 10,
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
         },
       }}
     >
@@ -53,6 +56,30 @@ function ProtectedArea() {
           tabBarLabel: "Map",
           tabBarIcon: ({ color }) => (
             <FontAwesome5 name="map-marked-alt" size={22} color={color} />
+          ),
+        }}
+      />
+
+      {/* NEW TAB: Availability */}
+      <Tabs.Screen
+        name="Availability"
+        component={AvailabilityScreen}
+        options={{
+          tabBarLabel: "Availability",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="calendar-check" size={22} color={color} />
+          ),
+        }}
+      />
+
+      {/* NEW TAB: Account */}
+      <Tabs.Screen
+        name="Account"
+        component={AccountScreen}
+        options={{
+          tabBarLabel: "Account",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="user" size={22} color={color} />
           ),
         }}
       />

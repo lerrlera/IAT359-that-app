@@ -4,20 +4,17 @@ import {
   Pressable, 
   StyleSheet, 
   Image, 
-  Linking, 
-  Alert 
+  Alert, 
+  Linking 
 } from "react-native";
 
-import { Colors } from "../utils/colors";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Accordion from "./accordion";
-import { useNavigation } from "@react-navigation/native";
+import { Colors } from "../utils/colors";
 
-export default function HouseCard({ house }) {
-  const navigation = useNavigation();
+export default function MapHouseCard({ house, onClose }) {
 
-  // open website
-  const handleOpenWebsite = async () => { 
+  const handleOpenWebsite = async () => {
     if (!house.website) {
       Alert.alert("No website available");
       return;
@@ -30,7 +27,6 @@ export default function HouseCard({ house }) {
     }
   };
 
-  // call
   const handleCall = () => {
     const number = house.phone || house.toll_free_phone;
     if (!number) {
@@ -40,41 +36,36 @@ export default function HouseCard({ house }) {
     Linking.openURL(`tel:${number}`);
   };
 
-  // show on map 
-  const handleDirections = () => {
-    if (!house.approxLat || !house.approxLng) {
-      Alert.alert("Location unavailable");
-      return;
-    }
-
-    navigation.navigate("Map", {
-      targetLat: Number(house.approxLat),
-      targetLng: Number(house.approxLng),
-      house: house
-    });
-  };
-
   return (
     <View style={styles.container}>
 
-      {/* Header */}
+      {/* close button to close pop-up card */}
+      {onClose && (
+        <Pressable style={styles.closeButton} onPress={onClose}>
+          <FontAwesome5 name="times" size={18} color={Colors.brown} />
+        </Pressable>
+      )}
+
+      {/* header part */}
       <View style={styles.headerContainer}>
         <Image
-  source={
-    house.availability?.toLowerCase() === "available"
-      ? require("../../assets/images/available-marker.png")
-      : require("../../assets/images/unavailable-marker.png")
-  }
-  style={styles.image}
-/>
+            source={
+            house.availability?.toLowerCase() === "available"
+            ? require("../../assets/images/available-marker.png")
+            : require("../../assets/images/unavailable-marker.png")
+            }
+            style={styles.image}
+        />
+
         <View style={styles.subheaderContainer}>
           <Text style={styles.title}>{house.program}</Text>
           <Text style={styles.subheaderText}>{house.organization}</Text>
         </View>
       </View>
 
-      {/* Status Row */}
+      {/* status */}
       <View style={styles.statusRow}>
+
         <View style={styles.availabilityContainer}>
           <View
             style={
@@ -83,6 +74,7 @@ export default function HouseCard({ house }) {
                 : styles.redDot
             }
           />
+
           <Text
             style={[
               styles.availabilityText,
@@ -103,19 +95,18 @@ export default function HouseCard({ house }) {
             ? `Updated: ${house.last_updated}`
             : "Updated: Unknown"}
         </Text>
+
       </View>
 
-      {/* City Row */}
-      <View style={styles.locationContainer}>
-        <View style={styles.boxContainer}>
-          <FontAwesome5 
-            name="map-marker-alt" 
-            size={18} 
-            color={Colors.peach} 
-            style={styles.icon} 
-          />
-          <Text style={styles.bodyText}>{house.city}</Text>
-        </View>
+      {/* city */}
+      <View style={styles.boxContainer}>
+        <FontAwesome5
+          name="map-marker-alt"
+          size={18}
+          color={Colors.peach}
+          style={styles.icon}
+        />
+        <Text style={styles.bodyText}>{house.city}</Text>
       </View>
 
       {/* More Info */}
@@ -123,60 +114,40 @@ export default function HouseCard({ house }) {
 
         {house.phone && (
           <Pressable 
-            style={styles.infoRow} 
+            style={styles.infoRow}
             onPress={() => Linking.openURL(`tel:${house.phone}`)}
           >
-            <FontAwesome5 
-              name="phone" 
-              size={16} 
-              color={Colors.peach} 
-              style={styles.infoIcon} 
-            />
+            <FontAwesome5 name="phone" color={Colors.peach} size={16} style={styles.infoIcon}/>
             <Text style={styles.infoText}>{house.phone}</Text>
           </Pressable>
         )}
 
         {house.toll_free_phone && (
           <Pressable 
-            style={styles.infoRow} 
+            style={styles.infoRow}
             onPress={() => Linking.openURL(`tel:${house.toll_free_phone}`)}
           >
-            <FontAwesome5 
-              name="phone-square-alt" 
-              size={16} 
-              color={Colors.peach} 
-              style={styles.infoIcon} 
-            />
+            <FontAwesome5 name="phone-square-alt" color={Colors.peach} size={16} style={styles.infoIcon}/>
             <Text style={styles.infoText}>{house.toll_free_phone}</Text>
           </Pressable>
         )}
 
         {house.text && (
           <Pressable 
-            style={styles.infoRow} 
+            style={styles.infoRow}
             onPress={() => Linking.openURL(`sms:${house.text}`)}
           >
-            <FontAwesome5 
-              name="headset" 
-              size={16} 
-              color={Colors.peach} 
-              style={styles.infoIcon} 
-            />
+            <FontAwesome5 name="headset" color={Colors.peach} size={16} style={styles.infoIcon}/>
             <Text style={styles.infoText}>{house.text}</Text>
           </Pressable>
         )}
 
         {house.email && (
           <Pressable 
-            style={styles.infoRow} 
+            style={styles.infoRow}
             onPress={() => Linking.openURL(`mailto:${house.email}`)}
           >
-            <FontAwesome5 
-              name="envelope" 
-              size={16} 
-              color={Colors.peach} 
-              style={styles.infoIcon} 
-            />
+            <FontAwesome5 name="envelope" color={Colors.peach} size={16} style={styles.infoIcon}/>
             <Text style={styles.infoText}>{house.email}</Text>
           </Pressable>
         )}
@@ -186,12 +157,7 @@ export default function HouseCard({ house }) {
             style={styles.infoRow} 
             onPress={handleOpenWebsite}
           >
-            <FontAwesome5 
-              name="external-link-alt" 
-              size={16} 
-              color={Colors.peach} 
-              style={styles.infoIcon} 
-            />
+            <FontAwesome5 name="external-link-alt" color={Colors.peach} size={16} style={styles.infoIcon}/>
             <Text style={[styles.infoText, styles.infoLink]}>
               Visit website
             </Text>
@@ -200,18 +166,11 @@ export default function HouseCard({ house }) {
 
       </Accordion>
 
-      {/* Call + Directions Buttons */}
-      <View style={styles.actionsRow}>
-        <Pressable style={styles.actionButton} onPress={handleCall}>
-          <FontAwesome5 name="phone" size={13} color="white" />
-          <Text style={styles.actionText}>Call</Text>
-        </Pressable>
-
-        <Pressable style={styles.actionButton} onPress={handleDirections}>
-          <FontAwesome5 name="map-marker-alt" size={13} color="white" />
-          <Text style={styles.actionText}>View on Map</Text>
-        </Pressable>
-      </View>
+      {/* call */}
+      <Pressable style={styles.callButton} onPress={handleCall}>
+        <FontAwesome5 name="phone" size={14} color="white" />
+        <Text style={styles.callText}>Call</Text>
+      </Pressable>
 
     </View>
   );
@@ -219,36 +178,44 @@ export default function HouseCard({ house }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff9f6ff",
+    backgroundColor: "#fff9f6ff",      // match HouseCard
     borderWidth: 1,
-    borderColor: "#e8dadaff",
-    width: "92%",
-    alignSelf: "center",
+    borderColor: "#d4d2d2ff",
     borderRadius: 15,
-    marginVertical: 8,
     padding: 15,
-    shadowColor: "#ffffffff",
+    width: "100%",
+    alignSelf: "center",
+    marginVertical: 8,
+    shadowColor: "#ffffffff",          // very soft shadow
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 5,
   },
 
-  headerContainer: {
-    flexDirection: "row",
-    padding: 2,
-    paddingTop: 6,
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    padding: 6,
+    zIndex: 10,
   },
 
-  subheaderContainer: {
-    flexDirection: "column",
-    flex: 1,
-    marginLeft: 15,
+  headerContainer: {
+    flexDirection: "row",
+    padding: 10,
+    paddingTop: 6,
+    marginBottom: 5,
   },
 
   image: {
-    width: 47,
+    width: 47,        // match HouseCard
     height: 47,
+  },
+
+  subheaderContainer: {
+    flex: 1,
+    marginLeft: 15,
   },
 
   title: {
@@ -279,16 +246,16 @@ const styles = StyleSheet.create({
   greenDot: {
     width: 12,
     height: 12,
+    borderRadius: 6,
     backgroundColor: Colors.green,
-    borderRadius: 10,
     marginRight: 6,
   },
 
   redDot: {
     width: 12,
     height: 12,
+    borderRadius: 6,
     backgroundColor: Colors.red,
-    borderRadius: 10,
     marginRight: 6,
   },
 
@@ -301,51 +268,21 @@ const styles = StyleSheet.create({
     color: "#6d6d6d",
   },
 
-  bodyText: {
-    fontSize: 15,
-  },
-
   boxContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fbebe4ff",
+    backgroundColor: "#fbebe4ff",   // match HouseCard
     padding: 14,
     borderRadius: 5,
     marginBottom: 7,
   },
 
   icon: {
-    paddingRight: 8,
+    marginRight: 8,
   },
 
-  actionsRow: {
-    flexDirection: "row",
-    marginTop: 6,
-    marginBottom: 5,
-    gap: 8,
-  },
-
-  actionButton: {
-    flex: 1,
-    flexDirection: "row",
-    backgroundColor: Colors.darkerPeach,
-    padding: 16,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  actionText: {
-    color: "white",
-    fontWeight: "600",
-    marginLeft: 6,
-    fontSize: 12,
-  },
-
-  link: {
-    color: Colors.peach,
-    textDecorationLine: "underline",
-    marginTop: 5,
+  bodyText: {
+    fontSize: 15,
   },
 
   infoRow: {
@@ -366,6 +303,22 @@ const styles = StyleSheet.create({
   infoLink: {
     textDecorationLine: "underline",
     color: Colors.peach,
+  },
+
+  callButton: {
+    marginTop: 5,
+    backgroundColor: Colors.brown,
+    padding: 14,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  callText: {
+    color: "white",
+    fontWeight: "600",
+    marginLeft: 8,
   },
 });
 

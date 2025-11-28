@@ -17,7 +17,7 @@ export default function SearchBar({
     <Pressable
       style={[
         styles.container,
-        { borderColor: isFocused ? Colors.brown : "white" },
+        { borderColor: isFocused ? Colors.brown : "#d4d2d2ff" },
         { backgroundColor: isFocused ? "#FEF9F7" : "white" },
       ]}
       onPress={() => inputRef.current?.focus()}
