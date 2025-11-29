@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Pressable, 
-  Alert 
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Alert, 
+  ScrollView, 
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Colors } from "../utils/colors";
@@ -37,6 +38,34 @@ export default function AvailabilityScreen() {
     setSelectedHouse(house || null);
   }, [selectedProgram, programs]);
 
+
+  function formatDate(date) {
+    // reference: https://www.geeksforgeeks.org/javascript/how-to-get-month-and-date-of-javascript-in-two-digit-format/
+    if (!date) return "Unavailable data";
+
+    // If Firestore timestamp, then convert to a js date object. 
+    if (date.toDate && typeof date.toDate === "function") {
+      date = date.toDate();
+    }
+
+    // If string or number, then convert to a js date object. 
+    if (!(date instanceof Date)) {
+      date = new Date(date);
+    }
+
+    if (isNaN(date)) return "Invalid"; //check if the date is an invalid date using isNan() function as per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isNaN
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
   // Toggle availability
   const handleChangeAvailability = () => {
     if (!selectedHouse) return;
@@ -46,8 +75,8 @@ export default function AvailabilityScreen() {
       "Are you sure you want to toggle availability?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Yes", 
+        {
+          text: "Yes",
           onPress: async () => {
             try {
               const newStatus =
@@ -66,21 +95,24 @@ export default function AvailabilityScreen() {
               setSelectedHouse({
                 ...selectedHouse,
                 availability: newStatus,
-                last_updated: new Date().toISOString(),
+                last_updated: formatDate(new Date()),
               });
 
               Alert.alert("Success", "Availability has been updated.");
             } catch (error) {
               Alert.alert("Error", error.message);
             }
-          } 
+          }
         }
       ]
     );
   };
 
+
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.containerForSpace}></View>
 
       {/* Dropdown */}
       <Text style={styles.label}>Select Program</Text>
@@ -92,10 +124,10 @@ export default function AvailabilityScreen() {
         >
           <Picker.Item label="Select a program..." value="" />
           {programs.map((item) => (
-            <Picker.Item 
-              key={item.id} 
-              label={item.program} 
-              value={item.program} 
+            <Picker.Item
+              key={item.id}
+              label={item.program}
+              value={item.program}
             />
           ))}
         </Picker>
@@ -124,7 +156,7 @@ export default function AvailabilityScreen() {
         <HouseCard house={selectedHouse} />
       )}
 
-    </View>
+    </ScrollView>
   );
 }
 
@@ -134,7 +166,9 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#fff",
   },
-
+  containerForSpace:{
+    marginTop: 75,
+  },
   label: {
     fontSize: 16,
     fontWeight: "600",
