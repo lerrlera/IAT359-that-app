@@ -8,16 +8,13 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase.config";
 
-// Cloud Firestore = flexible, scalable, non-sql cloud db.
-// for mobile, web, server dev.
+// Cloud Firestore = flexible, scalable, non-sql, document-oriented cloud db for mobile, web, server dev. No tables/rows.
 // keeps your data in sync across client apps thru real-time listeners.
-// offers offline support for mobile & web so you can build responsive apps
-// that work regardless of network latency / internet connectivity. 
-// no-sql, document-oriented database. No tables/rows. 
+// offers offline support for mobile & web so you can build responsive apps that work regardless of network latency / internet connectivity. 
 // Data's stored in documents, which are organized into collections. 
 // each document contains a set of key-value pairs. 
 // all documents must be stored in collections. 
-const FIRESTORE_COLLECTION = "transition_houses";
+export const FIRESTORE_COLLECTION = "transition_houses";
 
 export async function resetHouses() {
     const collectionRef = collection(db, FIRESTORE_COLLECTION);
@@ -43,8 +40,11 @@ async function fetchCSVFromGoogleSheet() {
         const response = await fetch(url);
         const csvText = await response.text();
         const parsed = Papa.parse(csvText, { header: true }).data;
-        await resetHouses();
 
+        
+        await resetHouses();
+        
+        console.log("resetHouses() is run.");
         console.log("RAW CSV TEXT:\n", csvText);
         console.log("PARSED LENGTH:", parsed.length);
 
@@ -120,7 +120,7 @@ export async function fetchHouses() {
 export async function insertHouse(house) {
     // creates new document reference (docRef)
     const docRef = doc(collection(db, FIRESTORE_COLLECTION));
-    
+
     // then writes the data using setDoc. 
     await setDoc(docRef, {
         city: house.city || "",
