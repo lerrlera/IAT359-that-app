@@ -36,13 +36,35 @@ export default function MapHouseCard({ house, onClose }) {
     Linking.openURL(`tel:${number}`);
   };
 
+  function formatUpdated(value) {
+  if (!value) return "Unknown";
+
+  // Firestore timestamps
+  if (value?.toDate) {
+    value = value.toDate();
+  }
+
+  const date = new Date(value);
+  if (isNaN(date)) return "Unknown";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+
   return (
     <View style={styles.container}>
 
       {/* close button to close pop-up card */}
       {onClose && (
         <Pressable style={styles.closeButton} onPress={onClose}>
-          <FontAwesome5 name="times" size={18} color={Colors.brown} />
+          <FontAwesome5 name="times" size={18} color={Colors.peach} />
         </Pressable>
       )}
 
@@ -90,11 +112,9 @@ export default function MapHouseCard({ house, onClose }) {
           </Text>
         </View>
 
-        <Text style={styles.updatedText}>
-          {house.last_updated
-            ? `Updated: ${house.last_updated}`
-            : "Updated: Unknown"}
-        </Text>
+        <Text style={styles.updatedText}>Updated: {formatUpdated(house.last_updated)}
+</Text>
+
 
       </View>
 
@@ -182,7 +202,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d4d2d2ff",
     borderRadius: 15,
-    padding: 15,
+    padding: 25,
     width: "100%",
     alignSelf: "center",
     marginVertical: 8,
@@ -203,9 +223,8 @@ const styles = StyleSheet.create({
 
   headerContainer: {
     flexDirection: "row",
-    padding: 10,
-    paddingTop: 6,
     marginBottom: 5,
+    marginRight: 6,
   },
 
   image: {
@@ -215,7 +234,7 @@ const styles = StyleSheet.create({
 
   subheaderContainer: {
     flex: 1,
-    marginLeft: 15,
+    marginLeft: 8,
   },
 
   title: {
@@ -307,7 +326,7 @@ const styles = StyleSheet.create({
 
   callButton: {
     marginTop: 5,
-    backgroundColor: Colors.brown,
+    backgroundColor: Colors.darkerPeach,
     padding: 14,
     borderRadius: 8,
     flexDirection: "row",

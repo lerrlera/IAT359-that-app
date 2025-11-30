@@ -4,22 +4,26 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Alert, 
-  ScrollView, 
+  Alert,
+  ScrollView,
+  Modal,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+
 import { Colors } from "../utils/colors";
 import HouseCard from "../modules/houseCard";
 import { fetchHouses, FIRESTORE_COLLECTION } from "../utils/db";
 
 // Firestore
 import { db } from "../utils/firebase.config.js";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 
 export default function AvailabilityScreen() {
   const [programs, setPrograms] = useState([]);
   const [selectedProgram, setSelectedProgram] = useState("");
   const [selectedHouse, setSelectedHouse] = useState(null);
+
+  // dropdown modal
+  const [pickerVisible, setPickerVisible] = useState(false);
 
   // Load houses using fetchHouses() in db.js
   useEffect(() => {
@@ -32,28 +36,27 @@ export default function AvailabilityScreen() {
 
   // When a program is selected, load its matching house data
   useEffect(() => {
-    if (!selectedProgram) return;
+    if (!selectedProgram) {
+      setSelectedHouse(null);
+      return;
+    }
 
     const house = programs.find((item) => item.program === selectedProgram);
     setSelectedHouse(house || null);
   }, [selectedProgram, programs]);
 
-
   function formatDate(date) {
-    // reference: https://www.geeksforgeeks.org/javascript/how-to-get-month-and-date-of-javascript-in-two-digit-format/
     if (!date) return "Unavailable data";
 
-    // If Firestore timestamp, then convert to a js date object. 
     if (date.toDate && typeof date.toDate === "function") {
       date = date.toDate();
     }
 
-    // If string or number, then convert to a js date object. 
     if (!(date instanceof Date)) {
       date = new Date(date);
     }
 
-    if (isNaN(date)) return "Invalid"; //check if the date is an invalid date using isNan() function as per https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isNaN
+    if (isNaN(date)) return "Invalid";
 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -91,7 +94,6 @@ export default function AvailabilityScreen() {
                 last_updated: new Date().toISOString(),
               });
 
-              // Refresh UI
               setSelectedHouse({
                 ...selectedHouse,
                 availability: newStatus,
@@ -102,98 +104,198 @@ export default function AvailabilityScreen() {
             } catch (error) {
               Alert.alert("Error", error.message);
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
-
+  // When user chooses a program from modal
+  const handleSelectProgram = (programName) => {
+    setSelectedProgram(programName);
+    setPickerVisible(false);
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.containerForSpace}></View>
-
-      {/* Dropdown */}
-      <Text style={styles.label}>Select Program</Text>
-      <View style={styles.dropdownWrapper}>
-        <Picker
-          selectedValue={selectedProgram}
-          onValueChange={(value) => setSelectedProgram(value)}
-          style={styles.dropdown}
-        >
-          <Picker.Item label="Select a program..." value="" />
-          {programs.map((item) => (
-            <Picker.Item
-              key={item.id}
-              label={item.program}
-              value={item.program}
-            />
-          ))}
-        </Picker>
+    
+    <View style={styles.root}>
+      
+       {/* HEADER */}
+      <View style={styles.greetingContainer}>
+        <Text style={styles.header}>Update availability</Text>
+        <Text style={styles.subheader}>
+          Change your transition house's availability
+        </Text>
       </View>
 
-      {/* Organization */}
-      {selectedHouse && (
-        <Text style={styles.organization}>
-          Organization: <Text style={{ fontWeight: "600" }}>
-            {selectedHouse.organization}
-          </Text>
+      {/* Label */}
+      <Text style={styles.label}>Select Program</Text>
+
+      {/* Custom "picker" button */}
+      <Pressable
+        style={styles.dropdownButton}
+        onPress={() => setPickerVisible(true)}
+      >
+        <Text
+          style={[
+            styles.dropdownButtonText,
+            !selectedProgram && { color: "#999" },
+          ]}
+          numberOfLines={1}
+        >
+          {selectedProgram || "Select a program..."}
         </Text>
-      )}
+      </Pressable>
 
-      {/* Change Availability Button */}
-      {selectedHouse && (
-        <Pressable style={styles.actionButton} onPress={handleChangeAvailability}>
-          <Text style={styles.actionText}>
-            Change Availability
-          </Text>
-        </Pressable>
-      )}
+      {/* Scrollable content below the picker */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Organization */}
+        {selectedHouse && (
+          <View style={styles.organizationBox}>
+            <Text style={styles.organizationLabel}>Organization</Text>
+            <Text style={styles.organizationValue}>{selectedHouse.organization}</Text>
+          </View>     
+        )}
 
-      {/* Single HouseCard */}
-      {selectedHouse && (
-        <HouseCard house={selectedHouse} />
-      )}
+        {/* Change Availability Button */}
+        {selectedHouse && (
+          <Pressable
+            style={styles.actionButton}
+            onPress={handleChangeAvailability}
+          >
+            <Text style={styles.actionText}>Change Availability</Text>
+          </Pressable>
+        )}
 
-    </ScrollView>
+        {/* Preview label */}
+{selectedHouse && (
+  <View style={styles.previewBox}>
+    <Text style={styles.previewLabel}>
+      This is how your house will appear in the list and on the map
+    </Text>
+  </View>
+)}
+
+        {/* Single HouseCard */}
+        {selectedHouse && <HouseCard house={selectedHouse} />}
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
+
+
+      {/* FULL-SCREEN MODAL PICKER (works same on iOS + Android) */}
+      <Modal
+        visible={pickerVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setPickerVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Select Program</Text>
+
+            <ScrollView style={styles.modalList}>
+              {programs.map((item) => (
+                <Pressable
+                  key={item.id}
+                  style={styles.modalItem}
+                  onPress={() => handleSelectProgram(item.program)}
+                >
+                  <Text style={styles.modalItemText}>{item.program}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <Pressable
+              style={styles.modalCancelButton}
+              onPress={() => setPickerVisible(false)}
+            >
+              <Text style={styles.modalCancelText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#fff",
   },
-  containerForSpace:{
+  greetingContainer: {
     marginTop: 75,
+    padding: 20,
+    paddingBottom: 20,
+    alignItems: "flex-start",
   },
+
+  header: {
+    fontSize: 18,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+
+  subheader: {
+    fontSize: 15,
+    color: "#8d8d8dff",
+  },
+
   label: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
+    paddingHorizontal: 16,
   },
 
-  dropdownWrapper: {
+  dropdownButton: {
+    marginHorizontal: 16,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    overflow: "hidden",
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    justifyContent: "center",
+    backgroundColor: "white",
   },
 
-  dropdown: {
-    height: 50,
-    width: "100%",
+  dropdownButtonText: {
+    fontSize: 15,
+    color: "#333",
+  },
+
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 13,
+    paddingBottom: 32,
   },
 
   organization: {
     fontSize: 16,
-    marginTop: 15,
+    marginTop: 5,
     marginBottom: 10,
   },
-
-  // EXACT COPY OF actionButton from HouseCard
+  organizationBox: {
+    backgroundColor: "#f4f4f4",
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 2,
+  },
+  organizationLabel: {
+    fontSize: 14,
+    color: "#777",
+    marginBottom: 4,
+  },
+  organizationValue: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
   actionButton: {
     flexDirection: "row",
     backgroundColor: Colors.darkerPeach,
@@ -207,7 +309,68 @@ const styles = StyleSheet.create({
   actionText: {
     color: "white",
     fontWeight: "600",
-    marginLeft: 6,
     fontSize: 14,
   },
+  previewBox: {
+    marginTop: 25,
+    marginBottom: 6,
+    backgroundColor: "#f4f4f4",
+    padding: 14,
+    borderRadius: 10,
+  },
+  previewLabel: {
+    fontSize: 12,
+    color: "#777",
+},
+
+  /* Modal styles */
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
+
+  modalCard: {
+    maxHeight: "70%",
+    backgroundColor: "white",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+
+  modalList: {
+    maxHeight: "100%",
+  },
+
+  modalItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+
+  modalItemText: {
+    fontSize: 15,
+  },
+
+  modalCancelButton: {
+    marginTop: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+
+  modalCancelText: {
+    fontSize: 15,
+    color: Colors.darkerPeach,
+    fontWeight: "600",
+  },
 });
+

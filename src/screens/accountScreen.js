@@ -3,7 +3,8 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  Alert 
+  Alert,
+  Image
 } from "react-native";
 
 import { firebase_auth } from "../utils/firebase.config";
@@ -27,18 +28,47 @@ export default function AccountScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.greetingContainer}>
-        
+
+      <View style={styles.contentWrapper}>
+
+        {/* App logo */}
+        <Image 
+          source={require("../../assets/images/that-logo.png")}
+          style={styles.logo}
+        />
+
+        {/* Screen title */}
         <Text style={styles.header}>Account</Text>
 
+        {/* User info */}
         {user && (
-          <Text style={styles.subheader}>Logged in as: {user.email}</Text>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{user.email}</Text>
+          </View>
         )}
 
+        {/* About this app */}
+        <View style={styles.aboutBox}>
+          <Text style={styles.aboutHeader}>About This App</Text>
+
+          <Text style={styles.aboutText}>
+            This app provides up-to-date availability information for 
+            transition houses across Metro Vancouver. 
+          </Text>
+
+          <Text style={styles.aboutText}>
+            Designed as part of our IAT 359 project, it helps house staff to set shelter availability.
+          </Text>
+        </View>
+
+        {/* Sign out */}
         <TouchableOpacity onPress={handleSignOut} style={styles.button}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
+
       </View>
+
     </View>
   );
 }
@@ -46,32 +76,73 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
+    backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white",
+  },
+  
+
+  contentWrapper: {
+    width: "80%",
+    alignItems: "center",
   },
 
-  greetingContainer: {
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "80%",
+  logo: {
+    width: 230,
+    height: 78,
+    marginBottom: 20,
   },
 
   header: {
     fontSize: 22,
     fontWeight: "700",
+    marginBottom: 25,
   },
 
-  subheader: {
+  infoBox: {
+    width: "100%",
+    padding: 15,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 10,
+    marginBottom: 25,
+  },
+
+  infoLabel: {
+    fontSize: 13,
+    color: "#777",
+    marginBottom: 5,
+  },
+
+  infoValue: {
     fontSize: 15,
     fontWeight: "500",
-    marginTop: 8,
+  },
+
+  aboutBox: {
+    width: "100%",
+    backgroundColor: "#fff3ef",
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 25,
+  },
+
+  aboutHeader: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: Colors.peach,
+  },
+
+  aboutText: {
+    fontSize: 14,
+    color: "#555",
+    lineHeight: 20,
+    marginBottom: 6,
   },
 
   button: {
-    marginTop: 20,
-    padding: 12,
+    marginTop: 10,
+    padding: 14,
     width: "100%",
     backgroundColor: Colors.darkerPeach,
     borderRadius: 8,
@@ -84,5 +155,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
 
 
