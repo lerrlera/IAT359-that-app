@@ -85,6 +85,7 @@ export default function SignInScreen() {
                 <TextInput
                     style={styles.input}
                     placeholder="Password"
+                    placeholderTextColor={"#bababaff"}
                     secureTextEntry
                     value={password}
                     onChangeText={setPassword}
@@ -107,7 +108,7 @@ export default function SignInScreen() {
                 disabled={loading}
                 style={[styles.button, styles.signUpButton]}
             >
-                <Text style={styles.buttonText}>
+                <Text style={{color:Colors.darkerPeach,textAlign:"center",}}>
                     {loading ? "Working..." : "Create Account"}
                 </Text>
             </TouchableOpacity>
@@ -162,6 +163,8 @@ const styles = StyleSheet.create({
     },
     signUpButton: {
         backgroundColor: Colors.brown,
+        borderWidth: 2,
+        borderColor: Colors.darkerPeach,
         
     },
     buttonText: {
